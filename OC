@@ -1,0 +1,433 @@
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Drawing;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows.Forms;
+using System.Diagnostics;
+using System.IO;
+using System.Configuration;
+using System.Xml.Linq;
+using System.Reflection;
+
+namespace WindowsFormsApp14
+{
+    //POTE 2018;
+
+    public partial class Form1 : Form
+    {
+        public Form1()
+        {
+            InitializeComponent();           
+        }
+
+        List<string> listFiles = new List<string>();
+       
+        private void button1_Click(object sender, EventArgs e)
+        {
+            using (FolderBrowserDialog fbd = new FolderBrowserDialog() { Description = "Select your path." })
+            {
+                if (fbd.ShowDialog() == DialogResult.OK)
+                {
+                    listFiles.Clear();
+                    listView.Items.Clear();
+
+                    txtPath.Text = fbd.SelectedPath;
+                    foreach (string item in Directory.GetFiles(fbd.SelectedPath))
+                    {
+                        imageList.Images.Add(Icon.ExtractAssociatedIcon(item));
+                        FileInfo fi = new FileInfo(item);
+                        listFiles.Add(fi.FullName);
+                        listView.Items.Add(fi.Name, imageList.Images.Count - 1);
+                    }
+                }
+            }
+        }
+
+        private void button2_Click(object sender, EventArgs e)
+        {
+            Close();
+        }
+
+        private void Form1_Load(object sender, EventArgs e)
+        {
+            OculusControllerStart();
+        } 
+
+        private void listView_MouseDoubleClick(object sender, MouseEventArgs e)
+        {
+            if (listView.FocusedItem != null && listView.SelectedItems.Count > 0)
+            {
+
+                    Process.Start(listFiles[listView.FocusedItem.Index]);
+
+            }
+        }
+
+
+
+        private void OculusMirror()
+        {
+            string path = Directory.GetCurrentDirectory();
+            string file2 = @"\OculusMirror.exe";
+            string oculusMirror = path + file2;
+            Process.Start(oculusMirror);
+
+        }
+
+        private void OculusMirrorClose()
+        {
+            try
+            {
+                foreach (Process proc in Process.GetProcessesByName("OculusMirror"))
+                {
+                    proc.Kill();
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
+        }
+
+        private void OculusControllerStart()
+        {
+            // listFiles.Clear();
+            // listView.Items.Clear();
+
+            string pathFolder = Directory.GetCurrentDirectory();
+            string file = @"\path.txt";
+            string path = pathFolder + file;
+            string text = File.ReadAllText(path);
+
+            foreach (string item in Directory.GetFiles(text))
+            {
+                imageList.Images.Add(Icon.ExtractAssociatedIcon(item));
+                FileInfo fi = new FileInfo(item);
+                listFiles.Add(fi.FullName);
+                listView.Items.Add(fi.Name, imageList.Images.Count - 1);
+            }
+        }
+
+        private void OculusControllerClose()
+        {
+            try
+            {
+                foreach (Process proc in Process.GetProcessesByName("Oculus Controller"))
+                {
+                    proc.Kill();
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
+        }
+
+
+        private void DoExist()
+        {
+
+            var runningProcessByName = Process.GetProcessesByName("OculusMirror");
+            if (runningProcessByName.Length == 0)
+            {
+                OculusMirror();
+            }
+            else
+            {
+                OculusMirrorClose();
+                OculusMirror();
+            }
+
+        }
+
+        private void OculusControllerDoExist()
+        {
+
+            var runningProcessByName = Process.GetProcessesByName("Oculus Controller");
+            if (runningProcessByName.Length == 0)
+            {
+                OculusControllerStart();
+            }
+            else
+            {
+                OculusControllerClose();
+            }
+
+        }  
+
+         private void VDIsRunning()
+         {
+             var runningProcessByName = Process.GetProcessesByName("notepad");
+
+             Process[] processList = Process.GetProcessesByName("notepad");
+             foreach (Process theProcess in processList)
+             {
+                 theProcess.ProcessName.ToString();
+                 theProcess.MainModule.FileName.ToString();
+
+             }
+             if (runningProcessByName.Length == 0)
+             {
+
+             }
+         }
+
+        private void listView_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.KeyCode == Keys.Add)
+            {
+                using (FolderBrowserDialog fbd = new FolderBrowserDialog() { Description = "Select your path." })
+                {
+                    if (fbd.ShowDialog() == DialogResult.OK)
+                    {
+                        listFiles.Clear();
+                        listView.Items.Clear();
+
+                        txtPath.Text = fbd.SelectedPath;
+                        foreach (string item in Directory.GetFiles(fbd.SelectedPath))
+                        {
+                            imageList.Images.Add(Icon.ExtractAssociatedIcon(item));
+                            FileInfo fi = new FileInfo(item);
+                            listFiles.Add(fi.FullName);
+                            listView.Items.Add(fi.Name, imageList.Images.Count - 1);
+                        }
+                    }
+                }
+            }
+
+            if (listView.FocusedItem != null && e.KeyCode == Keys.Enter)
+            {
+                string file = listFiles[listView.FocusedItem.Index];
+
+                Process.Start(file);
+
+                if (OMIsChecked == true)
+                {
+                    DoExist();
+                }
+
+                if (OCIsChecked == true)
+                {
+                    OculusControllerDoExist();
+                }
+            }
+
+
+            if (e.KeyCode == Keys.NumPad1)
+            {
+                if (listView.Items.Count >= 1)
+                {
+                    string file = listFiles[listView.Items.Count - listView.Items.Count];
+
+                    Process.Start(file);
+
+                    if (OMIsChecked == true)
+                    {
+                        DoExist();
+                    }
+
+                    if (OCIsChecked == true)
+                    {
+                        OculusControllerDoExist();
+                    }
+
+                    VDIsRunning();
+                }
+
+            }
+
+            else if (e.KeyCode == Keys.NumPad2)
+            {
+                if (listView.Items.Count >= 2)
+                {
+                    string file = listFiles[1];
+
+                    Process.Start(file);
+
+                    if (OMIsChecked == true)
+                    {
+                        DoExist();
+                    }
+
+                    if (OCIsChecked == true)
+                    {
+                        OculusControllerDoExist();
+                    }
+                }
+            }
+
+            else if (e.KeyCode == Keys.NumPad3)
+            {
+                if (listView.Items.Count >= 3)
+                {
+                    string file = listFiles[2];
+
+                    Process.Start(file);
+
+                    if (OMIsChecked == true)
+                    {
+                        DoExist();
+                    }
+
+                    if (OCIsChecked == true)
+                    {
+                        OculusControllerDoExist();
+                    }
+                }
+            }
+
+            else if (e.KeyCode == Keys.NumPad4)
+            {
+                if (listView.Items.Count >= 4)
+                {
+                    string file = listFiles[3];
+
+                    Process.Start(file);
+
+                    if (OMIsChecked == true)
+                    {
+                        DoExist();
+                    }
+
+                    if (OCIsChecked == true)
+                    {
+                        OculusControllerDoExist();
+                    }
+                }
+            }
+
+            else if (e.KeyCode == Keys.NumPad5)
+            {
+                if (listView.Items.Count >= 5)
+                {
+                    string file = listFiles[4];
+
+                    Process.Start(file);
+
+                    if (OMIsChecked == true)
+                    {
+                        DoExist();
+                    }
+
+                    if (OCIsChecked == true)
+                    {
+                        OculusControllerDoExist();
+                    }
+                }
+            }
+
+            else if (e.KeyCode == Keys.NumPad6)
+            {
+                if (listView.Items.Count >= 6)
+                {
+                    string file = listFiles[5];
+
+                    Process.Start(file);
+
+                    if (OMIsChecked == true)
+                    {
+                        DoExist();
+                    }
+
+                    if (OCIsChecked == true)
+                    {
+                        OculusControllerDoExist();
+                    }
+                }
+            }
+
+            else if (e.KeyCode == Keys.NumPad7)
+            {
+                if (listView.Items.Count >= 7)
+                {
+                    string file = listFiles[6];
+
+                    Process.Start(file);
+
+                    if (OMIsChecked == true)
+                    {
+                        DoExist();
+                    }
+
+                    if (OCIsChecked == true)
+                    {
+                        OculusControllerDoExist();
+                    }
+                }
+            }
+
+            else if (e.KeyCode == Keys.NumPad8)
+            {
+                if (listView.Items.Count >= 8)
+                {
+                    string file = listFiles[7];
+
+                    Process.Start(file);
+
+                    if (OMIsChecked == true)
+                    {
+                        DoExist();
+                    }
+
+                    if (OCIsChecked == true)
+                    {
+                        OculusControllerDoExist();
+                    }
+                }
+            }
+
+            else if (e.KeyCode == Keys.NumPad9)
+            {
+                if (listView.Items.Count >= 9)
+                {
+                    string file = listFiles[8];
+
+                    Process.Start(file);
+
+                    if (OMIsChecked == true)
+                    {
+                        DoExist();
+                    }
+
+                    if (OCIsChecked == true)
+                    {
+                        OculusControllerDoExist();
+                    }
+                }
+            }
+        }
+
+        public bool OMIsChecked
+        {
+            get { return checkBoxOM.Checked; }
+            set { checkBoxOM.Checked = value; }
+        }
+
+        public bool OCIsChecked
+        {
+            get { return checkBoxOC.Checked; }
+            set { checkBoxOM.Checked = value; }
+        }
+
+
+        private void Form1_MouseMove(object sender, MouseEventArgs e)
+        {
+            if (e.Button == MouseButtons.Left)
+            {
+                Left += e.X - lastPoint.X;
+                Top += e.Y - lastPoint.Y;
+            }
+        }
+
+        Point lastPoint;
+
+        private void Form1_MouseDown(object sender, MouseEventArgs e)
+        {
+            lastPoint = new Point(e.X, e.Y);
+        }
+    }
+}
